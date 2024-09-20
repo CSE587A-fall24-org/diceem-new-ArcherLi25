@@ -61,10 +61,11 @@ def diceEM(experiment_data: List[NDArray[np.int_]],  # pylint: disable=C0103
 
         # YOUR CODE HERE. SET REQUIRED VARIABLES BY CALLING e-step AND m-step.
         # E-step: compute the expected counts given current parameters        
-  
         # M-step: update the parameters given the expected counts
       
         prev_bag_of_dice: BagOfDice = bag_of_dice
+        expected = e_step(experiment_data,prev_bag_of_dice)
+        updated_bag_of_dice = m_step(expected)
         bag_of_dice = updated_bag_of_dice
 
     return iterations, bag_of_dice
@@ -108,6 +109,10 @@ def e_step(experiment_data: List[NDArray[np.int_]],
     # counts for each type over all the draws.  
 
     # PUT YOUR CODE HERE, FOLLOWING THE DIRECTIONS ABOVE
+    for draw in experiment_data:
+        posterior = dice_posterior(draw,bag_of_dice)
+        expected_counts[0] += posterior * draw
+        expected_counts[1] += (1-posterior) * draw
 
     return expected_counts
 
@@ -135,9 +140,9 @@ def m_step(expected_counts_by_die: NDArray[np.float_]):
     updated_type_2_frequency = np.sum(expected_counts_by_die[1])
 
     # REPLACE EACH NONE BELOW WITH YOUR CODE. 
-    updated_priors = None
-    updated_type_1_face_probs = None
-    updated_type_2_face_probs = None
+    updated_priors = [updated_type_1_frequency/(updated_type_1_frequency+updated_type_2_frequency),updated_type_2_frequency/(updated_type_1_frequency+updated_type_2_frequency)]
+    updated_type_1_face_probs = expected_counts_by_die[0]/updated_type_1_frequency
+    updated_type_2_face_probs = expected_counts_by_die[1]/updated_type_2_frequency
     
     updated_bag_of_dice = BagOfDice(updated_priors,
                                     [Die(updated_type_1_face_probs),
